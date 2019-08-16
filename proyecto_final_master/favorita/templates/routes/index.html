@@ -1,0 +1,29 @@
+{% extends 'layout.html'%}
+{# Load the tag library #}
+{% load bootstrap4 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% block content%}
+<a class="btn btn-default pull-left" href="/favorita" >Go Back</a>
+<h3 class="pull-right text-center">{{title}}</h3>
+<form action="/favorita/show_map" method="POST" class="form">
+  {% csrf_token %}
+  {% bootstrap_formset formset %}
+  
+  {% buttons %}
+    <button type="submit" class="btn btn-primary">
+      Submit
+    </button>
+    <button type="reset" class="btn btn-danger">
+      Cancel
+    </button>
+  {% endbuttons %}
+</form>
+
+{%endblock%}

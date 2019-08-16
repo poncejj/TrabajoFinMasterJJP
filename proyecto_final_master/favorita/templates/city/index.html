@@ -1,0 +1,28 @@
+{% extends 'layout.html'%}
+
+{% block content%}
+<h2 class="text-center">{{title}}</h2>
+<a href="/favorita/city/0" class="btn btn-success">Add</a>
+<div class="table-responsive">
+        <table class="table table-striped table-bordered" style="width:100%">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>State Name</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for obj in generic_objects %}
+        <tr onclick="redirect_url('/favorita/city/{{obj.id}}')">
+            <td>{{obj.id}}</td>
+            <td>{{obj.name}}</td>
+            <td>{{obj.state.name}}</td>
+            <td><a href="/favorita/delete_city/{{obj.id}}"><span data-feather="trash-2"></span></a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{%endblock%}

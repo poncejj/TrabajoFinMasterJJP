@@ -1,0 +1,31 @@
+{% extends 'layout.html'%}
+
+{% block content%}
+    <h2 class="text-center">{{title}}</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered" style="width:100%">
+        <thead>
+        <tr>
+          {% for form in headers %}
+            {% for field in form %}
+              <th>{{ field.label }}</th>
+            {% endfor %}
+          {% endfor %}
+            <th>Make Default</th>
+            <th>Copy</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for form in body %}
+        <tr onclick="redirect_url('/favorita/config_evaluation/{{form.id.value}}')">
+            {% for field in form %}
+            <td>{{ field.value }}</td>
+            {% endfor %}
+            <td><a href="/favorita/select_evaluation/{{form.id.value}}"><span data-feather="check"></span></a></td>
+            <td><a href="/favorita/config_evaluation/{{form.id.value}}"><span data-feather="copy"></span></a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{%endblock%}

@@ -1,0 +1,35 @@
+{% extends 'layout.html'%}
+
+{# Load the tag library #}
+{% load bootstrap4 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% block content%}
+<a class="btn btn-default pull-left" href="/favorita/config_route/0/" >Go Back</a>
+<h3 class="pull-right text-center">{{title}}</h3>
+<form method="POST" class="form" name="result_form">
+  {% csrf_token %}
+  {% bootstrap_form form %}
+ </form>
+  <div id="map"></div>
+   <script>
+    var map;
+    var route;
+    
+    function initMap() {
+      var uluru = {lat: -0.179174, lng: -78.4930591};
+      var map = new google.maps.Map(
+          document.getElementById('map'), {zoom: 7, center: uluru});
+    }
+
+    </script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key={{api_key}}&callback=initMap">
+    </script>
+{%endblock%}

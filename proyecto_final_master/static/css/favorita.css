@@ -1,0 +1,19 @@
+#map {
+	height: 100%;
+}
+.slider {
+  margin-bottom: 15px;
+}
+.ui-slider-handle.ui-corner-all.ui-state-default{
+  	margin-bottom: 15px;
+    width: 3em;
+    height: 1.6em;
+    top: 50%;
+    margin-top: -.8em;
+    text-align: center;
+    line-height: 1.6em;
+  }
+#id_routes {
+  height: 100px; 
+  overflow:scroll;
+}

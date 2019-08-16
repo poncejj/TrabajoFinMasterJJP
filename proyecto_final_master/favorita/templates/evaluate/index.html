@@ -1,0 +1,48 @@
+{% extends 'layout.html'%}
+{# Load the tag library #}
+{% load bootstrap4 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% block content%}
+<a class="btn btn-default pull-left" href="/favorita" >Go Back</a>
+<h3 class="pull-right text-center">{{title}}</h3>
+<form action="/favorita/config_evaluation/0/" method="POST" class="form">
+  {% csrf_token %}
+  {% bootstrap_formset formset %}
+  
+  {% buttons %}
+    <button type="submit" class="btn btn-primary">
+      Submit
+    </button>
+    <button type="reset" class="btn btn-danger">
+      Cancel
+    </button>
+     <input type="button" class="btn btn-success" onclick="location.href='/favorita/show_meta_results';" value="Meta Results" />
+     <input type="button" class="btn btn-warning" onclick="location.href='/favorita/show_results';" value="Results" />
+  {% endbuttons %}
+</form>
+<script>
+    (function(){
+      $("#btn_results").click(function(e) {
+          e.preventDefault();
+          $.ajax({
+              type: "POST",
+              url: "/favorita/show_results",
+              success: function(result) {
+                  alert('ok');
+              },
+              error: function(result) {
+                  alert('error');
+              }
+          });
+      });
+    });
+
+    </script>
+{%endblock%}
