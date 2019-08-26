@@ -9,8 +9,6 @@
         <tr>
             <th>Id</th>
             <th>City</th>
-            <th>Type</th>
-            <th>Cluster</th>
             <th>Location</th>
             <th></th>
         </tr>
@@ -20,8 +18,6 @@
         <tr onclick="redirect_url('/favorita/store/{{obj.id}}')">
             <td>{{obj.id}}</td>
             <td>{{obj.city.name}}</td>
-            <td>{{obj.store_type.letter}}</td>
-            <td>{{obj.cluster}}</td>
             <td>{{obj.location}}</td>
             <td><a href="/favorita/delete_store/{{obj.id}}"><span data-feather="trash-2"></span></a></td>
         </tr>

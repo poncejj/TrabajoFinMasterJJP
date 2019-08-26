@@ -10,8 +10,6 @@
             <th>Id</th>
             <th>Name</th>
             <th>Capacity</th>
-            <th>Max. Speed</th>
-            <th>Perishable</th>
             <th></th>
         </tr>
         </thead>
@@ -21,8 +19,6 @@
             <td>{{obj.id}}</td>
             <td>{{obj.name}}</td>
             <td>{{obj.capacity}}</td>
-            <td>{{obj.max_speed_limit}}</td>
-            <td>{{obj.perishable}}</td>
             <td><a href="/favorita/delete_vehicleType/{{obj.id}}"><span data-feather="trash-2"></span></a></td>
         </tr>
         {% endfor %}

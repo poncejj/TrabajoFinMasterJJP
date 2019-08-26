@@ -9,8 +9,6 @@
         <tr>
             <th>Id</th>
             <th>Name</th>
-            <th>Drive License</th>
-            <th>Driver Hour Cost</th>
             <th></th>
         </tr>
         </thead>
@@ -19,8 +17,6 @@
         <tr onclick="redirect_url('/favorita/driver/{{obj.id}}')">
             <td>{{obj.id}}</td>
             <td>{{obj.name}} {{obj.last_name}}</td>
-            <td>{{obj.driver_license}}</td>
-            <td>{{obj.driver_hour_cost}}</td>
             <td><a href="/favorita/delete_driver/{{obj.id}}"><span data-feather="trash-2"></span></a></td>
         </tr>
         {% endfor %}

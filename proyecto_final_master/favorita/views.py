@@ -17,6 +17,148 @@ from django.urls import reverse
 from django.conf import settings
 
 # Create your views here.
+
+#########################################################################
+def configEvaluation(request, id = 0):
+  fields_excluded = ['total_time', 'best_fitness', 'errors', 'created_date', 'min_result',
+  'max_result','mean_result','median_result','variance_result','std_result']
+  #Create the basic formset to show in the template only the fields user has_solutions to complete
+  MetaLogFormSet = modelformset_factory(MetaLog, exclude=(fields_excluded), extra=1)
+  if int(id) > 0:
+    formset = MetaLogFormSet(queryset = MetaLog.objects.filter(id = id))
+  else:
+    formset = MetaLogFormSet(queryset = MetaLog.objects.none())
+
+  #When user send a petition we use the POST method
+  if request.method == 'POST':
+    #Get all the data sended from the template and put them in an object to be evaluated
+    #by the selected algorithm with the parameters that the user wants to evaluate
+    formset = MetaLogFormSet(request.POST, request.FILES)
+    #Recive a complete formset with all the results
+    
+    if formset.is_valid():
+      meta_log_object = MetaLog()
+      meta_log_object.population_size = formset.cleaned_data[0]['population_size']
+      meta_log_object.number_iterations = formset.cleaned_data[0]['number_iterations']
+      meta_log_object.crossing_rate = formset.cleaned_data[0]['crossing_rate']
+      meta_log_object.mutation_rate = formset.cleaned_data[0]['mutation_rate']
+      meta_log_object.failed_attempts_stop = formset.cleaned_data[0]['failed_attempts_stop']
+      meta_log_object = runMetaAlgorithm(meta_log_object)
+      meta_log_object.save(force_insert=True)
+
+  context = {
+    'title' : 'Meta Parametrization algorithms',
+    'formset':formset
+  }
+  return render(request, 'evaluate/index.html',context)
+
+def showMetaLog(request):
+  formset = modelformset_factory(MetaLog, exclude=(), extra=1)
+  headers = formset(queryset=MetaLog.objects.none())
+  body = modelformset_factory(MetaLog, exclude=(), extra=0)
+  
+  context = {
+  'title' : 'Meta Evaluated Algorithms!',
+  'headers': headers,
+  'body': body,
+  }
+  return render(request, 'evaluate/meta_results.html',context)
+
+def showLog(request):
+  formset = modelformset_factory(Log, exclude=(), extra=1)
+  headers = formset(queryset=Log.objects.none())
+  body = modelformset_factory(Log, exclude=(), extra=0)
+  
+  context = {
+  'title' : 'Evaluated Algorithms!',
+  'headers': headers,
+  'body': body,
+  }
+  return render(request, 'evaluate/results.html',context)
+  
+def configRoute(request, id = 0):
+  fields_excluded=['selected', 'population_size', 'number_iterations', 'mutation_rate', 'crossing_rate', 
+  'failed_attempts_stop', 'total_time', 'distance_result', 'num_trucks_result', 'staff_cost_result', 
+  'fuel_cost_result', 'delivery_time_result', 'fitness_result', 'errors', 'created_date', 'completed', 
+  'min_result','max_result','mean_result','median_result','variance_result','std_result']
+  
+  LogFormSet = modelformset_factory(Log, exclude=(fields_excluded), extra=1)
+  if int(id) > 0:
+    formset = LogFormSet(queryset = Log.objects.filter(id = id))
+  else:
+    try:
+      LogFormSet2 = modelformset_factory(Log, exclude=(fields_excluded), extra=0)
+      formset = LogFormSet2(queryset = Log.objects.filter(selected=True))
+    except Log.DoesNotExist:
+      formset = LogFormSet(queryset = Log.objects.none())
+
+  context = {
+    'title' : 'Config route search',
+    'formset':formset
+  }
+  return render(request, 'routes/index.html',context)
+
+def showMap(request):
+  fields_excluded=['selected', 'population_size', 'number_iterations', 'mutation_rate', 'crossing_rate', 
+  'failed_attempts_stop', 'total_time', 'distance_result', 'num_trucks_result', 'staff_cost_result', 
+  'fuel_cost_result', 'delivery_time_result', 'fitness_result', 'errors', 'created_date', 'completed', 
+  'min_result','max_result','mean_result','median_result','variance_result','std_result']
+
+    #When user send a petition we use the POST method
+  LogFormSet = modelformset_factory(Log, exclude=(fields_excluded), extra=1)
+  #LogFormSet = modelformset_factory(Log, exclude=(), extra=0)
+  if request.method == 'POST':
+    formset = LogFormSet(request.POST, request.FILES)
+    if formset.is_valid():
+      try:
+        selected_log = Log.objects.get(selected=True)
+      except Log.DoesNotExist:
+        selected_log = generateLogObject()
+
+      log_object = Log()
+      log_object.population_size = selected_log.population_size
+      log_object.number_iterations = selected_log.number_iterations
+      log_object.crossing_rate = selected_log.crossing_rate
+      log_object.mutation_rate = selected_log.mutation_rate
+      log_object.failed_attempts_stop = selected_log.failed_attempts_stop
+      log_object.route_date = formset.cleaned_data[0]['route_date']
+      log_object.distance_weight = formset.cleaned_data[0]['distance_weight']
+      log_object.num_trucks_weight = formset.cleaned_data[0]['num_trucks_weight']
+      log_object.staff_cost_weight = formset.cleaned_data[0]['staff_cost_weight']
+      log_object.fuel_cost_weight = formset.cleaned_data[0]['fuel_cost_weight']
+      log_object.delivery_time_weight = formset.cleaned_data[0]['delivery_time_weight']
+      has_solution, planification, log_object = runGenethicMultiobjective(log_object)
+      log_object.save(force_insert=True)
+      if has_solution:
+        #request = HttpRequest()
+        form = ShowRouteForm()
+        choices = []
+        
+        for route in planification:
+          choices.append((route.name, route))
+        form.fields["routes"].choices = choices
+        json_coordinates, json_items, json_distances, json_drivers = getJsonData(planification)
+
+        context = {
+          'title' : 'Routes',
+          'form':form,
+          'planification': planification,
+          'json_coordinates': json_coordinates,
+          'json_items': json_items,
+          'json_distances': json_distances,
+          'json_drivers': json_drivers,
+          'api_key': 'AIzaSyAl0c5zmmljjzQu2IfGkn69qodQh6glH3s',
+        }
+        
+        return render(request, 'routes/map.html',context)
+
+def selectEvaluation(request, id = 0):
+  Log.objects.all().update(selected=False)
+  Log.objects.filter(id=id).update(selected=True)
+
+  return HttpResponseRedirect('/favorita/show_results')
+  #####################################################################
+
 def index(request):
   if settings.CHART is not None:
     values_json = settings.CHART.to_json(orient='values')
@@ -494,138 +636,3 @@ def configuration(request, id=1):
   else:
     formset = ConfigurationFormSet(queryset = Configuration.objects.filter(id = id))
     return render(request, 'configuration/index.html', {'formset': formset, 'id':id, 'title':"Configuration"})
-
-def showLog(request):
-  formset = modelformset_factory(Log, exclude=(), extra=1)
-  headers = formset(queryset=Log.objects.none())
-  body = modelformset_factory(Log, exclude=(), extra=0)
-  
-  context = {
-  'title' : 'Evaluated Algorithms!',
-  'headers': headers,
-  'body': body,
-  }
-  return render(request, 'evaluate/results.html',context)
-
-def showMetaLog(request):
-  formset = modelformset_factory(MetaLog, exclude=(), extra=1)
-  headers = formset(queryset=MetaLog.objects.none())
-  body = modelformset_factory(MetaLog, exclude=(), extra=0)
-  
-  context = {
-  'title' : 'Meta Evaluated Algorithms!',
-  'headers': headers,
-  'body': body,
-  }
-  return render(request, 'evaluate/meta_results.html',context)
-
-
-def configRoute(request, id = 0):
-  #Create the basic formset to show in the template only the fields user has to complete
-  LogFormSet = modelformset_factory(Log, exclude=('selected', 'population_size', 'number_iterations', 'mutation_rate', 'crossing_rate', 'failed_attempts_stop', 'total_time', 'distance_result', 'num_trucks_result', 'staff_cost_result', 'fuel_cost_result', 'delivery_time_result', 'fitness_result', 'errors', 'created_date'), extra=0)
-  if int(id) > 0:
-    formset = LogFormSet(queryset = Log.objects.filter(id = id))
-  else:
-    formset = LogFormSet(queryset = Log.objects.get(selected=True))
-
-  context = {
-    'title' : 'Config Route',
-    'formset':formset
-  }
-  return render(request, 'routes/index.html',context)
-
-def showMap(request):
-    #When user send a petition we use the POST method
-  LogFormSet = modelformset_factory(Log, exclude=('selected', 'population_size', 'number_iterations', 'mutation_rate', 'crossing_rate', 'failed_attempts_stop', 'total_time', 'distance_result', 'num_trucks_result', 'staff_cost_result', 'fuel_cost_result', 'delivery_time_result', 'fitness_result', 'errors', 'created_date'), extra=1)
-  #LogFormSet = modelformset_factory(Log, exclude=(), extra=0)
-  if request.method == 'POST':
-    #Get all the data sended from the template and put them in an object to be evaluated
-    #by the selected algorithm with the parameters that the user wants to evaluate
-    formset = LogFormSet(request.POST, request.FILES)
-    #Recive a complete formset with all the results
-    if formset.is_valid():
-      selected_log = Log.objects.get(selected=True)
-      log_object = Log()
-      log_object.population_size = selected_log.population_size
-      log_object.number_iterations = selected_log.number_iterations
-      log_object.crossing_rate = selected_log.crossing_rate
-      log_object.mutation_rate = selected_log.mutation_rate
-      log_object.failed_attempts_stop = selected_log.failed_attempts_stop
-      log_object.route_date = formset.cleaned_data[0]['route_date']
-      log_object.distance_rate = formset.cleaned_data[0]['distance_rate']
-      log_object.num_trucks_rate = formset.cleaned_data[0]['num_trucks_rate']
-      log_object.staff_cost_rate = formset.cleaned_data[0]['staff_cost_rate']
-      log_object.fuel_cost_rate = formset.cleaned_data[0]['fuel_cost_rate']
-      log_object.delivery_time_rate = formset.cleaned_data[0]['delivery_time_rate']
-      has_solution, planification, log_object = runGenethicMultiobjective(log_object)
-      log_object.save(force_insert=True)
-      if has_solution:
-        #request = HttpRequest()
-        form = ShowRouteForm()
-        choices = []
-        coordinates = {}
-        distances = {}
-        drivers = {}
-        items = {}
-        
-        for route in planification:
-          choices.append((route.name, route))
-          coordinates[str(route)] = getJsonCoordinates(route)
-          distances[str(route)] = route.distance
-          drivers[str(route)] = getJsonDrivers(route)
-          items[str(route)] = getJsonItems(route)
-
-        form.fields["routes"].choices = choices
-        json_coordinates = json.dumps(coordinates)
-        json_distances = json.dumps(distances)
-        json_drivers = json.dumps(drivers)
-        json_items = json.dumps(items)
-
-        context = {
-          'title' : 'Routes',
-          'form':form,
-          'planification': planification,
-          'coordinates': json_coordinates,
-          'distances': json_distances,
-          'drivers': json_drivers,
-          'items': json_items,
-        }
-        
-        return render(request, 'routes/map.html',context)
-
-def configEvaluation(request, id = 0):
-  #Create the basic formset to show in the template only the fields user has to complete
-  MetaLogFormSet = modelformset_factory(MetaLog, exclude=('total_time', 'best_fitness', 'errors', 'created_date'), extra=1)
-  if int(id) > 0:
-    formset = MetaLogFormSet(queryset = MetaLog.objects.filter(id = id))
-  else:
-    formset = MetaLogFormSet(queryset = MetaLog.objects.none())
-
-  #When user send a petition we use the POST method
-  if request.method == 'POST':
-    #Get all the data sended from the template and put them in an object to be evaluated
-    #by the selected algorithm with the parameters that the user wants to evaluate
-    formset = MetaLogFormSet(request.POST, request.FILES)
-    #Recive a complete formset with all the results
-    
-    if formset.is_valid():
-      meta_log_object = MetaLog()
-      meta_log_object.population_size = formset.cleaned_data[0]['population_size']
-      meta_log_object.number_iterations = formset.cleaned_data[0]['number_iterations']
-      meta_log_object.crossing_rate = formset.cleaned_data[0]['crossing_rate']
-      meta_log_object.mutation_rate = formset.cleaned_data[0]['mutation_rate']
-      meta_log_object.failed_attempts_stop = formset.cleaned_data[0]['failed_attempts_stop']
-      meta_log_object = runMetaAlgorithm(meta_log_object)
-      meta_log_object.save(force_insert=True)
-
-  context = {
-    'title' : 'Meta Parametrization algorithms',
-    'formset':formset
-  }
-  return render(request, 'evaluate/index.html',context)
-
-def selectEvaluation(request, id = 0):
-  Log.objects.all().update(selected=False)
-  Log.objects.filter(id=id).update(selected=True)
-
-  return HttpResponseRedirect('/favorita/show_results')

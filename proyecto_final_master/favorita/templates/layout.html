@@ -31,17 +31,11 @@
         font-size: 3.5rem;
       }
     }
-    /* Set the size of the div element that contains the map */
-    #map {
-      height: 400px;  /* The height is 400 pixels */
-      width: 100%;  /* The width is the width of the web page */
-     }
   </style>
   <!-- Custom styles for this template -->
 </head>
 <body>
   <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-    <!-- <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search"> -->
     <ul class="navbar-nav px-3">
       <li class="nav-item text-nowrap">
         {% if user.is_authenticated %}
@@ -89,21 +83,33 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/favorita/transactions">
-                <span data-feather="trending-up"></span>
-                Transactions
+              <a class="nav-link" href="/favorita/vehicles">
+                <span data-feather="truck"></span>
+                Vehicles
+              </a>
+            </li>
+             <li class="nav-item">
+              <a class="nav-link" href="/favorita/drivers">
+                <span data-feather="users"></span>
+                Drivers
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/favorita/sales">
-                <span data-feather="bar-chart-2"></span>
-                Sales
+              <a class="nav-link" href="/favorita/vehicleTypes">
+                <span data-feather="triangle"></span>
+                Vehicle Types
+              </a>
+            </li>
+             <li class="nav-item">
+              <a class="nav-link" href="/favorita/driverLicenses">
+                <span data-feather="x-square"></span>
+                Driver License
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/favorita/oils">
-                <span data-feather="activity"></span>
-                Oil Price
+              <a class="nav-link" href="/favorita/fuelTypes">
+                <span data-feather="droplet"></span>
+                Fuel Type
               </a>
             </li>
             <li class="nav-item">
@@ -131,45 +137,9 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/favorita/holidaysLocales">
-                <span data-feather="navigation"></span>
-                Holiday Locales
-              </a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link" href="/favorita/holidaysTypes">
                 <span data-feather="sun"></span>
                 Holiday Type
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/favorita/vehicleTypes">
-                <span data-feather="triangle"></span>
-                Vehicle Types
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/favorita/vehicles">
-                <span data-feather="truck"></span>
-                Vehicles
-              </a>
-            </li>
-             <li class="nav-item">
-              <a class="nav-link" href="/favorita/fuelTypes">
-                <span data-feather="droplet"></span>
-                Fuel Type
-              </a>
-            </li>
-             <li class="nav-item">
-              <a class="nav-link" href="/favorita/driverLicenses">
-                <span data-feather="x-square"></span>
-                Driver License
-              </a>
-            </li>
-             <li class="nav-item">
-              <a class="nav-link" href="/favorita/drivers">
-                <span data-feather="users"></span>
-                Drivers
               </a>
             </li>
             <li class="nav-item">
@@ -178,6 +148,30 @@
                 Configuration
               </a>
             </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="/favorita/transactions">
+                <span data-feather="trending-up"></span>
+                Transactions
+              </a>
+            </li> -->
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="/favorita/sales">
+                <span data-feather="bar-chart-2"></span>
+                Sales
+              </a>
+            </li> -->
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="/favorita/oils">
+                <span data-feather="activity"></span>
+                Oil Price
+              </a>
+            </li> -->
+            <!--<li class="nav-item">
+              <a class="nav-link" href="/favorita/holidaysLocales">
+                <span data-feather="navigation"></span>
+                Holiday Locales
+              </a>
+            </li> -->
           </ul>
         </div>
       </nav>

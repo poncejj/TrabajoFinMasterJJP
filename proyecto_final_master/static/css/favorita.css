@@ -1,5 +1,6 @@
-#map {
-	height: 100%;
+ #map {
+    height: 100%;
+    margin-bottom: 20px;
 }
 .slider {
   margin-bottom: 15px;
@@ -17,3 +18,8 @@
   height: 100px; 
   overflow:scroll;
 }
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }

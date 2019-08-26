@@ -1,8 +1,7 @@
 from ..common import my_constants
 from ..common.util import *
-from ..common.genethic_functions import *
+from ..common.common_functions import *
 from decimal import Decimal
-
 #########################   FITNESS FUNCTIONS  ################################## 
 #Evaluate the fitness of the distance
 def evaluateDistanceObj(chromosome):
@@ -10,6 +9,7 @@ def evaluateDistanceObj(chromosome):
     distance = 0
     #For each of the chromosome 
     for route in chromosome:
+        route.distance = calculateDistance(route.visited_stores)
         distance += route.distance
     return distance
 
@@ -30,28 +30,30 @@ def evaluateStaffCostObj(chromosome):
     staff_cost = 0
     for route in chromosome:
         visited_stores2 = []
-        start = 0
-
-        for d, driver in enumerate(route.drivers):
-            for i, store in enumerate(route.visited_stores[start:]):
-                if store == my_constants.CENTRAL_STORE and visited_stores2 != []:
-                    valid, route_time, distance = getRouteTime(route, visited_stores2)
+        assigned_drivers = route.drivers
+        s = 0
+        for store in route.visited_stores:
+            #When is the central store or the last store to visit
+            if store == my_constants.CENTRAL_STORE and s > 0:
+                valid, route_time, distance = getRouteTime(route, visited_stores2)
+                
+                driver = assigned_drivers[-1]
                 
                 work_time = timeToFloat(driver.max_work_time)
                 extra_work_time = work_time + timeToFloat(driver.max_work_extra_time)
-                if (d == len(route.drivers) - 1 and i == len(route.visited_stores) - 1 ) or (route_time >= work_time and route_time <= work_time + extra_work_time):
-                    #calculate cost
-                    start = i
+                
+                if (route_time >= work_time and route_time <= extra_work_time and s < len(route.visited_stores)) or (s == len(route.visited_stores) - 1):
                     if my_constants.IS_WEEKEND_HOLIDAY:
                         staff_cost += route_time * driver.driver_hour_cost * my_constants.CONFIGURATION.weekend_hour_rate
                     else:
-                        normal_cost = driver.max_work_time * driver.driver_hour_cost
-                        extra_cost = (route_time - driver.max_work_time ) * driver.driver_hour_cost * my_constants.CONFIGURATION.extra_hour_rate
+                        normal_cost = work_time * driver.driver_hour_cost
+                        extra_cost = (route_time - work_time ) * driver.driver_hour_cost * my_constants.CONFIGURATION.extra_hour_rate
                         staff_cost += normal_cost + extra_cost
+                    visited_stores2 = []
+                    assigned_drivers = assigned_drivers[:-1]
 
-
-                visited_stores2.append(store)
-        
+            visited_stores2.append(store)
+            s += 1
         del visited_stores2
 
     return staff_cost
@@ -78,42 +80,23 @@ def evaluateDeliveryTimeObj(chromosome):
                 max_delivery_time = route.delivery_time
     return max_delivery_time
 
-def evaluateChromosome(chromosome, log_search):
-    distance = Decimal((evaluateDistanceObj(chromosome)))
-    num_trucks = Decimal(evaluateNumTruksObj(chromosome))
-    fuel_cost = Decimal(evaluateFuelCostObj(chromosome))
-    delivery_time = Decimal(evaluateDeliveryTimeObj(chromosome))
-    staff_cost = Decimal(evaluateStaffCostObj(chromosome))
-    log_search.distance_rate = Decimal(log_search.distance_rate)
-    log_search.num_trucks_rate = Decimal(log_search.num_trucks_rate)
-    log_search.fuel_cost_rate = Decimal(log_search.fuel_cost_rate)
-    log_search.staff_cost_rate = Decimal(log_search.staff_cost_rate)
-    log_search.delivery_time_rate = Decimal(log_search.delivery_time_rate)
-
-    fitness = log_search.distance_rate * distance + log_search.num_trucks_rate * num_trucks + log_search.staff_cost_rate * staff_cost + log_search.fuel_cost_rate * fuel_cost + log_search.delivery_time_rate * delivery_time
-    print('fitness: ' + str(fitness))
-    return chromosome, fitness
-
-def saveFinalChromosome(chromosome, log_search):
+def evaluateChromosome(chromosome, log_search, final = False):
     distance = Decimal(evaluateDistanceObj(chromosome))
     num_trucks = Decimal(evaluateNumTruksObj(chromosome))
     fuel_cost = Decimal(evaluateFuelCostObj(chromosome))
     delivery_time = Decimal(evaluateDeliveryTimeObj(chromosome))
     staff_cost = Decimal(evaluateStaffCostObj(chromosome))
-    log_search.distance_rate = Decimal(log_search.distance_rate)
-    log_search.num_trucks_rate = Decimal(log_search.num_trucks_rate)
-    log_search.fuel_cost_rate = Decimal(log_search.fuel_cost_rate)
-    log_search.staff_cost_rate = Decimal(log_search.staff_cost_rate)
-    log_search.delivery_time_rate = Decimal(log_search.delivery_time_rate)
 
-
-    fitness = log_search.distance_rate * distance + log_search.num_trucks_rate * num_trucks + log_search.staff_cost_rate * staff_cost + log_search.fuel_cost_rate * fuel_cost + log_search.delivery_time_rate * delivery_time
-    
-    log_search.distance_result = distance
-    log_search.num_trucks_result = num_trucks
-    log_search.fuel_cost_result = fuel_cost
-    log_search.delivery_time_result = delivery_time
-    log_search.staff_cost_result = staff_cost
-    log_search.fitness_result = fitness
-
-    return chromosome, log_search
+    fitness = log_search.distance_weight * distance + log_search.num_trucks_weight * num_trucks + log_search.staff_cost_weight * staff_cost + log_search.fuel_cost_weight * fuel_cost + log_search.delivery_time_weight * delivery_time
+    print('fitness: ' + str(fitness))
+    if final:
+        log_search.distance_result = distance
+        log_search.num_trucks_result = num_trucks
+        log_search.fuel_cost_result = fuel_cost
+        log_search.delivery_time_result = delivery_time
+        log_search.staff_cost_result = staff_cost
+        log_search.fitness_result = fitness
+        log_search.completed = True
+        return chromosome, log_search
+    else:
+        return chromosome, fitness

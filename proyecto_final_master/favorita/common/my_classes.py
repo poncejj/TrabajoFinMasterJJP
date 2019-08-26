@@ -2,7 +2,7 @@ import heapq
 import pandas as pd
 import numpy as np
 from . import my_constants, util
-from . import genethic_functions
+from . import common_functions
 
 ##################  CLASES  ######################
 class Position:
@@ -20,7 +20,7 @@ class Position:
         return self.y
 
     def getCoordinates(self):
-        return [self.x, self.y]
+        return self.x, self.y
 
 class LocalStore:
     pos = Position(-1,-1)
@@ -30,7 +30,7 @@ class LocalStore:
 
     def __init__(self,name):
         self.name = name
-        self.items = util.create_empty_DataFrame([('store_nbr', int),('item_nbr', int),('unit_sales', float),('perishable', bool)])
+        self.items = []
 
     def setPosition(self,pos):
         self.pos = Position(pos[0],pos[1])
@@ -41,7 +41,7 @@ class LocalStore:
 
     def setDistanceCentral(self):
         if self.pos.x_coor() != -1 and self.pos.y_coor() != -1:
-            self.central_distance = genethic_functions.getDistance(my_constants.CENTRAL_STORE,self)
+            self.central_distance = common_functions.getDistance(my_constants.CENTRAL_STORE,self)
 
     def getName(self):
         return self.name
@@ -67,10 +67,10 @@ class Route:
     def __init__(self, name):
         self.name = name
         self.visited_stores = [my_constants.CENTRAL_STORE]
-        self.items = util.create_empty_DataFrame([('store_nbr', int),('item_nbr', int),('unit_sales', float),('perishable', bool)])
         self.drivers = []
         self.distance = 0
         self.delivery_time = 0
+        self.items = []
                 
     def initAvaibleCapacity(self):
         if self.vehicle != None:
@@ -82,8 +82,8 @@ class Route:
     def getAvaibleCapacity(self):
         return self.avaible_capacity
 
-    def addDrivers(self, drivers):
-        self.drivers.extend(drivers)
+    def addDriver(self, driver):
+        self.drivers.append(driver)
     
     def setVehicle(self, vehicle):
         self.vehicle = vehicle
@@ -102,24 +102,20 @@ class Route:
     def setFitness(self, fitness):
         self.fitness = fitness
 
-    def addStore(self, store):
+    def addStore(self, store, validate = False):
         last_store = self.visited_stores[-1]
         if last_store is not None and last_store != store:
-            if self.updateDeliveryTime(store):
-                d = genethic_functions.getDistance(last_store, store )
-                self.distance += d
-                self.visited_stores.append(store)
+            self.visited_stores.append(store)
+            valid_route_time, delivery_time, distance = common_functions.getRouteTime(self)
+            if valid_route_time:
+                self.distance = distance
+                self.delivery_time = delivery_time
                 return True
-            return False
+            else:
+                if validate:
+                    self.visited_stores.pop()
+                return False
 
-    def updateDeliveryTime(self, store):
-        visited_stores = self.visited_stores
-        visited_stores.append(store)
-        valid_route_time, delivery_time, distance = genethic_functions.getRouteTime(self, visited_stores)
-        if valid_route_time:
-            self.delivery_time = delivery_time
-        return valid_route_time
-    
     def rename(self, name):
         self.name = name
 

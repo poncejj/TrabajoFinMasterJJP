@@ -19,15 +19,21 @@
  </form>
   <div id="map"></div>
    <script>
-    var map;
-    var route;
+    let map;
+    let markers = [];
+    let coordinates = {{json_coordinates|safe}};
+    let items = {{json_items|safe}};
+    let distances = {{json_distances|safe}};
+    let drivers = {{json_drivers|safe}};
+    
+    console.log(distances);
     
     function initMap() {
-      var uluru = {lat: -0.179174, lng: -78.4930591};
-      var map = new google.maps.Map(
+      var uluru = {lat: -1.2571434, lng: -78.6566384};
+      map = new google.maps.Map(
           document.getElementById('map'), {zoom: 7, center: uluru});
+      // alert(route);
     }
-
     </script>
     <script async defer
       src="https://maps.googleapis.com/maps/api/js?key={{api_key}}&callback=initMap">

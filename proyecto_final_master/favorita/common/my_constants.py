@@ -1,5 +1,7 @@
 ################  CONSTANTS  #######################
 
+global DRIVERS
+global VEHICLES
 global POPULATION_SIZE
 global EVOLUTION_ITERATIONS
 global MUTATION_RATE
@@ -16,4 +18,5 @@ global EVOLUTION_ITERATIONS_META
 global MUTATION_RATE_META
 global CROSSOVER_RATE_META
 global FAILED_ATTEMPTS_STOP_META
+global DRIVER_LICENSE
 R = 6373.0

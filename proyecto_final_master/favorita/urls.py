@@ -51,12 +51,13 @@ urlpatterns = [
     re_path(r'^driverLicenses$', views.driverLicenses, name='driverLicenses'),
     re_path(r'^driverLicense/(?P<id>\d+)/$', views.driverLicense, name='driverLicense'),
     re_path(r'^delete_driverLicense/(?P<id>\d+)/$', views.delete_driverLicense, name='delete_driverLicense'),
-    re_path(r'^config_evaluation/(?P<id>\d+)/$', views.configEvaluation, name='configuration'),
+    re_path(r'^config_evaluation/(?P<id>\d+)/$', views.configEvaluation, name='configEvaluation'),
     re_path(r'^select_evaluation/(?P<id>\d+)/$', views.selectEvaluation, name='selectEvaluation'),
     re_path(r'^show_results$', views.showLog, name='show_results'),
     re_path(r'^show_meta_results$', views.showMetaLog, name='show_meta_results'),
     re_path(r'^config_route/(?P<id>\d+)/$', views.configRoute, name='config_route'),
     re_path(r'^show_map$', views.showMap, name='show_map'),
+    re_path(r'^configuration/(?P<id>\d+)/$', views.configuration, name='configuration'),
 ]
 
 loadTransactionsData()

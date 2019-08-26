@@ -9,7 +9,7 @@ from .crossover import *
 from .mutation import *
 from ..models import *
 from ..common.util import *
-from ..common.genethic_functions import *
+from ..common.common_functions import *
 from ..common.init_functions import *
 from copy import copy, deepcopy
 from ..common.my_classes import *
@@ -27,17 +27,19 @@ def runGenethicMultiobjective(log_search):
     if valid_population:
         results = evaluatePopulation(population, log_search)
         results = evolutionGeneration(results, stores, log_search)
-        routes = results[0][0]
-        saveFinalChromosome(routes, log_search)
+        chromosome = results[0][0]
+        chromosome = renameRoutes(chromosome)
+        log_search = evaluateResults(results, log_search)
+        chromosome, log_search = evaluateChromosome(chromosome, log_search, True)    
         log_search.total_time = timeit.default_timer() - start_time
-        print('Time elapsed: {0}'.format(log_search.total_time))
-        return True, routes, log_search
+        print('Time elapsed Genethic algo: {0}'.format(log_search.total_time))
+        return True, chromosome, log_search
     else:
-        routes = []
+        chromosome = []
         total_distance = 0
         valid_solution = False
         log_search.errors = 'Too much restrictions, can´t be solved'
-
+        log_search.completed = False
         log_search.total_time = timeit.default_timer() - start_time
         print('Time elapsed: {0}'.format(log_search.total_time))
         return False, [], log_search
@@ -53,25 +55,20 @@ def evolutionGeneration(results, stores, log_search):
         bx = results[l.pop()][0]
         a = None
         b = None
-        if my_constants.CROSSOVER_RATE == round(random.uniform(0, 1), 2):
-            a,b = crossover(ax, bx, deepcopy(stores))
-        if my_constants.MUTATION_RATE == round(random.uniform(0, 1), 2):
-            if a is not None:
-                a = mutate(a, deepcopy(stores))
-            else:
-                a = mutate(ax, deepcopy(stores))
-        if my_constants.MUTATION_RATE == round(random.uniform(0, 1), 2):
-            if b is not None:
-                b = mutate(b, deepcopy(stores))
-            else:
-                b = mutate(bx, deepcopy(stores))
         
+        a, b = crossover(ax, bx, deepcopy(stores))
+            
         if a is not None:
-            results[0][0], results[0][1] = evaluateChromosome(a, log_search)
-        if b is not None:
-            results[1][0], results[1][1] = evaluateChromosome(b, log_search)
+            a = mutate(a, deepcopy(stores))
+            a, resultA = evaluateChromosome(a, log_search)
+            results = np.vstack((results, [a, resultA]))
         
-        results = results[results[:,1].argsort()]
-
-    print('Time elapsed: {0}'.format(start_time))
+        if b is not None:
+            b = mutate(b, deepcopy(stores))
+            b, resultB = evaluateChromosome(b, log_search)
+            results = np.vstack((results, [b, resultB]))
+        
+    results = results[results[:,1].argsort()]
+    results = results[:my_constants.POPULATION_SIZE]
+    print('Time elapsed evolution: {0}'.format(timeit.default_timer() - start_time))
     return results
